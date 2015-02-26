@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Android-Auth-Sync</string>
+    <string name="desc">Desc</string>
+    <string name="login_path">http://api.randomuser.me/?seed=azer</string>
+    <string name="sync_path">http://api.randomuser.me/?results=3</string>
+
+</resources>
