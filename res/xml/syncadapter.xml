@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accountType="me.hoen.android_auth_sync.auth"
+    android:accountType="@string/account_type"
     android:contentAuthority="me.hoen.android_auth_sync.provider"
     android:supportsUploading="true"
     android:userVisible="true" />

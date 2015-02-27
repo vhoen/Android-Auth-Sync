@@ -54,7 +54,7 @@ public class ContactDataSource {
 			list.add(Contact.fromCursor(cursor));
 			cursor.moveToNext();
 		}
-		// make sure to close the cursor
+
 		cursor.close();
 		return list;
 	}

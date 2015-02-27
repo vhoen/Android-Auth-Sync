@@ -1,6 +1,6 @@
 package me.hoen.android_auth_sync;
 
-import me.hoen.android_auth_sync.auth.LoginActivity;
+import me.hoen.android_auth_sync.auth.Authenticator;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
@@ -34,16 +34,15 @@ public class MainActivity extends ActionBarActivity {
 
 		AccountManager am = AccountManager.get(this);
 
-		String accountType = LoginActivity.ARG_ACCOUNT_TYPE;
-		String authTokenType = LoginActivity.ARG_AUTH_TYPE;
+		String accountType = Authenticator.ACCOUNT_TYPE;
+		String authTokenType = Authenticator.AUTHTOKEN_TYPE;
 
 		am.getAuthTokenByFeatures(accountType, authTokenType, null, this, null,
 				null, new AccountManagerCallback<Bundle>() {
 					@Override
 					public void run(AccountManagerFuture<Bundle> future) {
 						try {
-							Bundle bnd = null;
-							bnd = future.getResult();
+							Bundle bnd = future.getResult();
 							String keyAuthToken = AccountManager.KEY_AUTHTOKEN;
 							String authToken = bnd.getString(keyAuthToken);
 

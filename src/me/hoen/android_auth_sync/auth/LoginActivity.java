@@ -54,8 +54,6 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		// The sign up activity returned that the user has successfully created
-		// an account
 		if (requestCode == REQ_SIGNUP && resultCode == RESULT_OK) {
 			finishLogin(data);
 		} else
@@ -83,10 +81,7 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 			String authtoken = intent
 					.getStringExtra(AccountManager.KEY_AUTHTOKEN);
 			String authtokenType = mAuthTokenType;
-			// Creating the account on the device and setting the auth token we
-			// got
-			// (Not setting the auth token will cause another call to the server
-			// to authenticate the user)
+
 			mAccountManager
 					.addAccountExplicitly(account, accountPassword, null);
 			mAccountManager.setAuthToken(account, authtokenType, authtoken);

@@ -5,5 +5,6 @@
     <string name="desc">Desc</string>
     <string name="login_path">http://api.randomuser.me/?seed=azer</string>
     <string name="sync_path">http://api.randomuser.me/?results=3</string>
+    <string name="account_type">me.hoen.android_auth_sync.auth</string>
 
 </resources>
