@@ -308,7 +308,14 @@ public class MainActivity extends ActionBarActivity {
 Right now, you have every pieces needed to display our contact list, unfortunately, you don't have any data to display. That will come later. Right now to make sure that you will get your very own data, you need to set up authentication on your app.
 
 ## Android Authenticator
-
+- ServerAuthenticate
+- AccountGeneral
+- LoginActivity.java
+- Authenticator
+- AuthenticatorService
+- android manifest
+- authenticator.xml
+- MainActivity.java ?
 
 ## Android Sync Adapter 
 At this point, we could display the contact list if we had any contact. That's where the Sync Adapter comes into play. It will fetch a few contacts and store them into a database, and once done, it will tell the fragment that it can refresh its data.

@@ -51,6 +51,12 @@ public class Contact {
 		this.url = url;
 	}
 
+	@Override
+	public String toString() {
+		return "Contact [id=" + id + ", title=" + title + ", firstName="
+				+ firstName + ", lastName=" + lastName + ", url=" + url + "]";
+	}
+
 	public static Contact fromJsonObject(JSONObject json) {
 		try {
 			Contact c = new Contact();
