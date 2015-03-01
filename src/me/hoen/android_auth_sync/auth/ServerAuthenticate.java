@@ -23,7 +23,7 @@ public class ServerAuthenticate {
 		this.context = context;
 	}
 
-	public String userSignIn(String username, String password) throws Exception {
+	public User userSignIn(String username, String password) throws Exception {
 
 		try {
 			DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -42,12 +42,14 @@ public class ServerAuthenticate {
 
 			JSONObject json = new JSONObject(result);
 
-			// using dummy data as token
-			String authToken = json.getJSONArray("results").getJSONObject(0)
-					.getString("seed");
+			User u = User.fromJson(json);
+		
+			UserManager.getInstance().addUser(u);
+			
+			String authToken = u.getToken();
 
 			Log.d(MainActivity.TAG, "Authentication auth token : " + authToken);
-			return authToken;
+			return u;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -2,6 +2,7 @@ package me.hoen.android_auth_sync.auth;
 
 import me.hoen.android_auth_sync.AuthOnTaskCompleted;
 import me.hoen.android_auth_sync.R;
+import me.hoen.android_auth_sync.sync.Utils;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
@@ -89,17 +90,14 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 		final Account account = new Account(accountName,
 				intent.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE));
 
+		// set auto-sync
 		ContentResolver.setIsSyncable(account,
 				getString(R.string.sync_provider), 1);
 		ContentResolver.setSyncAutomatically(account,
 				getString(R.string.sync_provider), true);
 
-		final Bundle requestSyncExtras = new Bundle(1);
-		requestSyncExtras.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED,
-				true);
-		requestSyncExtras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-		ContentResolver.requestSync(account, getString(R.string.sync_provider),
-				requestSyncExtras);
+		// request sync to start asap
+		Utils.requestSync(account, getApplicationContext());
 
 		if (getIntent().getBooleanExtra(ARG_IS_ADDING_NEW_ACCOUNT, false)) {
 			String authtoken = intent
@@ -109,6 +107,10 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 			mAccountManager
 					.addAccountExplicitly(account, accountPassword, null);
 
+			User u = UserManager.getInstance().getUser(accountName);
+			if (u != null) {
+				User.saveToAccount(u, account, getApplicationContext());
+			}
 			mAccountManager.setAuthToken(account, authtokenType, authtoken);
 		} else {
 			mAccountManager.setPassword(account, accountPassword);

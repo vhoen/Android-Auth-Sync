@@ -19,20 +19,21 @@ public class AuthenticationTask extends AsyncTask<String, Void, Intent> {
 
 	@Override
 	protected Intent doInBackground(String... params) {
-		String authToken = null;
 		Bundle data = new Bundle();
 
 		try {
 			String username = params[0];
 			String password = params[1];
 			String accountType = params[2];
-			
-			authToken = new ServerAuthenticate(context).userSignIn(username, password);
 
-			data.putString(AccountManager.KEY_ACCOUNT_NAME, username);
-			data.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
-			data.putString(AccountManager.KEY_AUTHTOKEN, authToken);
-			data.putString(LoginActivity.PARAM_USER_PASS, password);
+			User u = new ServerAuthenticate(context).userSignIn(username,
+					password);
+			if (u != null) {
+				data.putString(AccountManager.KEY_ACCOUNT_NAME, u.getUsername());
+				data.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
+				data.putString(AccountManager.KEY_AUTHTOKEN, u.getToken());
+				data.putString(LoginActivity.PARAM_USER_PASS, u.getPassword());
+			}
 		} catch (Exception e) {
 			data.putString(LoginActivity.KEY_ERROR_MESSAGE, e.getMessage());
 
@@ -55,7 +56,7 @@ public class AuthenticationTask extends AsyncTask<String, Void, Intent> {
 				callback.onTaskCompleted(intent);
 			}
 		}
-		
+
 	}
 
 }

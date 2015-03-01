@@ -81,7 +81,8 @@ public class ContactAdapter extends ArrayAdapter<Contact> {
 		return rowView;
 	}
 
-	private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+	
+	static public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
 		ImageView bmImage;
 
 		public DownloadImageTask(ImageView bmImage) {

@@ -8,4 +8,7 @@
     <string name="account_type">me.hoen.android_auth_sync.auth</string>
     <string name="auth_token_type">@string/account_type</string>
 	<string name="sync_provider">me.hoen.android_auth_sync.provider</string>
+	<string name="profile">Profile</string>
+	<string name="sync">Synchronize</string>
+	<string name="logout">Logout</string>
 </resources>

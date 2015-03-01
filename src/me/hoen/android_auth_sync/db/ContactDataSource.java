@@ -58,4 +58,8 @@ public class ContactDataSource {
 		cursor.close();
 		return list;
 	}
+	
+	public void emptyTable(){
+		database.execSQL("DELETE FROM " + SqliteHelper.TABLE_CONTACTS);
+	}
 }

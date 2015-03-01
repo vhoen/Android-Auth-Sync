@@ -11,7 +11,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 public class Authenticator extends AbstractAccountAuthenticator {
-	
+
 	private Context mContext;
 
 	public Authenticator(Context context) {
@@ -68,11 +68,12 @@ public class Authenticator extends AbstractAccountAuthenticator {
 			final String password = am.getPassword(account);
 			if (password != null) {
 				try {
-					authToken = new ServerAuthenticate(mContext)
-							.userSignIn(account.name, password);
-					User user = new User(account.name, authToken);
-					if (user != null) {
-						authToken = user.getToken();
+					User u = new ServerAuthenticate(mContext).userSignIn(
+							account.name, password);
+
+					if (u != null) {
+						User.saveToAccount(u, account, this.mContext);
+						authToken = u.getToken();
 					}
 				} catch (Exception e) {
 					e.printStackTrace();

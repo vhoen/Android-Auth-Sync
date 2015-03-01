@@ -22,7 +22,7 @@ public class MainActivity extends ActionBarActivity {
 		Fragment f = new ContactsFragment();
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		fragmentManager.beginTransaction()
-				.replace(android.R.id.content, f, "home").commit();
+				.add(android.R.id.content, f, "home").commit();
 		fragmentManager.executePendingTransactions();
 
 	}
