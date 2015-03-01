@@ -20,10 +20,12 @@ import android.util.Log;
 
 public class LoadContactsTask  extends AsyncTask<String, Void, JSONObject> {
 	protected Context context;
+	protected SyncTaskCompleted callback;
 
-	public LoadContactsTask(Context context) {
+	public LoadContactsTask(Context context, SyncTaskCompleted callback) {
 		super();
 		this.context = context;
+		this.callback = callback;
 	}
 
 	@Override
@@ -69,6 +71,10 @@ public class LoadContactsTask  extends AsyncTask<String, Void, JSONObject> {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		
+		if(this.callback != null){
+			this.callback.onSyncCompleted();
 		}
 	}
 }

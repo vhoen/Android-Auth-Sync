@@ -11,8 +11,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 public class Authenticator extends AbstractAccountAuthenticator {
-	public static final String ACCOUNT_TYPE = "me.hoen.android_auth_sync.auth";
-	public static final String AUTHTOKEN_TYPE = "me.hoen.android_auth_sync.auth";
 	
 	private Context mContext;
 

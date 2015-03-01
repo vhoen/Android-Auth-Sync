@@ -52,7 +52,7 @@
 
         <provider
             android:name="me.hoen.android_auth_sync.sync.SyncContentProvider"
-            android:authorities="me.hoen.android_auth_sync.provider"
+            android:authorities="@string/sync_provider"
             android:exported="false"
             android:syncable="true" />
 

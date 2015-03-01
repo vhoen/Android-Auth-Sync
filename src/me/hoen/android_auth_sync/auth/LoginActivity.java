@@ -5,6 +5,8 @@ import me.hoen.android_auth_sync.R;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
+import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -23,11 +25,17 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 	private AccountManager mAccountManager;
 	private String mAuthTokenType;
 
+	protected ProgressDialog progress;
+
 	protected AuthOnTaskCompleted loginCallback = new AuthOnTaskCompleted() {
 
 		@Override
 		public void onTaskCompleted(Intent intent) {
 			finishLogin(intent);
+
+			if (progress.isShowing()) {
+				progress.hide();
+			}
 		}
 	};
 
@@ -35,6 +43,8 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+
+		progress = new ProgressDialog(this);
 
 		mAccountManager = AccountManager.get(getBaseContext());
 
@@ -67,6 +77,7 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 				.getText().toString();
 		final String accountType = getIntent().getStringExtra(ARG_ACCOUNT_TYPE);
 
+		progress.show();
 		new AuthenticationTask(getApplicationContext(), loginCallback).execute(
 				username, userpass, accountType);
 	}
@@ -77,6 +88,19 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 		String accountPassword = intent.getStringExtra(PARAM_USER_PASS);
 		final Account account = new Account(accountName,
 				intent.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE));
+
+		ContentResolver.setIsSyncable(account,
+				getString(R.string.sync_provider), 1);
+		ContentResolver.setSyncAutomatically(account,
+				getString(R.string.sync_provider), true);
+
+		final Bundle requestSyncExtras = new Bundle(1);
+		requestSyncExtras.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED,
+				true);
+		requestSyncExtras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+		ContentResolver.requestSync(account, getString(R.string.sync_provider),
+				requestSyncExtras);
+
 		if (getIntent().getBooleanExtra(ARG_IS_ADDING_NEW_ACCOUNT, false)) {
 			String authtoken = intent
 					.getStringExtra(AccountManager.KEY_AUTHTOKEN);
@@ -84,6 +108,7 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 
 			mAccountManager
 					.addAccountExplicitly(account, accountPassword, null);
+
 			mAccountManager.setAuthToken(account, authtokenType, authtoken);
 		} else {
 			mAccountManager.setPassword(account, accountPassword);
