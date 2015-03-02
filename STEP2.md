@@ -1,5 +1,23 @@
 ## Android Authenticator
 
+- [strings.xml](./res/values/strings.xml)
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Android-Auth-Sync</string>
+    <string name="desc">Desc</string>
+    <string name="login_path">http://api.randomuser.me/?results=1</string>
+    <string name="sync_path">http://api.randomuser.me/?results=3</string>
+    <string name="account_type">me.hoen.android_auth_sync.auth</string>
+    <string name="auth_token_type">@string/account_type</string>
+    <string name="sync_provider">me.hoen.android_auth_sync.provider</string>
+    <string name="profile">Profile</string>
+    <string name="sync">Synchronize</string>
+    <string name="logout">Logout</string>
+</resources>
+```
+
 - [ServerAuthenticate](./src/me/hoen/android_auth_sync/auth/ServerAuthenticate.java)
 ```java
 public class ServerAuthenticate {
@@ -10,7 +28,7 @@ public class ServerAuthenticate {
         this.context = context;
     }
 
-    public String userSignIn(String username, String password) throws Exception {
+    public User userSignIn(String username, String password) throws Exception {
 
         try {
             DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -29,12 +47,14 @@ public class ServerAuthenticate {
 
             JSONObject json = new JSONObject(result);
 
-            // using dummy data as token
-            String authToken = json.getJSONArray("results").getJSONObject(0)
-                    .getString("seed");
+            User u = User.fromJson(json);
+        
+            UserManager.getInstance().addUser(u);
+            
+            String authToken = u.getToken();
 
             Log.d(MainActivity.TAG, "Authentication auth token : " + authToken);
-            return authToken;
+            return u;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -82,11 +102,17 @@ public class LoginActivity extends AccountAuthenticatorActivity {
     private AccountManager mAccountManager;
     private String mAuthTokenType;
 
+    protected ProgressDialog progress;
+
     protected AuthOnTaskCompleted loginCallback = new AuthOnTaskCompleted() {
 
         @Override
         public void onTaskCompleted(Intent intent) {
             finishLogin(intent);
+
+            if (progress.isShowing()) {
+                progress.hide();
+            }
         }
     };
 
@@ -94,6 +120,8 @@ public class LoginActivity extends AccountAuthenticatorActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        progress = new ProgressDialog(this);
 
         mAccountManager = AccountManager.get(getBaseContext());
 
@@ -126,6 +154,7 @@ public class LoginActivity extends AccountAuthenticatorActivity {
                 .getText().toString();
         final String accountType = getIntent().getStringExtra(ARG_ACCOUNT_TYPE);
 
+        progress.show();
         new AuthenticationTask(getApplicationContext(), loginCallback).execute(
                 username, userpass, accountType);
     }
@@ -136,6 +165,16 @@ public class LoginActivity extends AccountAuthenticatorActivity {
         String accountPassword = intent.getStringExtra(PARAM_USER_PASS);
         final Account account = new Account(accountName,
                 intent.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE));
+
+        // set auto-sync
+        ContentResolver.setIsSyncable(account,
+                getString(R.string.sync_provider), 1);
+        ContentResolver.setSyncAutomatically(account,
+                getString(R.string.sync_provider), true);
+
+        // request sync to start asap
+        Utils.requestSync(account, getApplicationContext());
+
         if (getIntent().getBooleanExtra(ARG_IS_ADDING_NEW_ACCOUNT, false)) {
             String authtoken = intent
                     .getStringExtra(AccountManager.KEY_AUTHTOKEN);
@@ -143,6 +182,11 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 
             mAccountManager
                     .addAccountExplicitly(account, accountPassword, null);
+
+            User u = UserManager.getInstance().getUser(accountName);
+            if (u != null) {
+                User.saveToAccount(u, account, getApplicationContext());
+            }
             mAccountManager.setAuthToken(account, authtokenType, authtoken);
         } else {
             mAccountManager.setPassword(account, accountPassword);
@@ -157,8 +201,20 @@ public class LoginActivity extends AccountAuthenticatorActivity {
 - [User](./src/me/hoen/android_auth_sync/auth/User.java)
 ```java
 public class User implements Serializable {
-    String token;
     String username;
+    String email;
+    String password;
+
+    String title;
+    String firstName;
+    String lastName;
+    String thumbnail;
+
+    String token;
+
+    public User() {
+
+    }
 
     public User(String username, String token) {
         this.username = username;
@@ -170,6 +226,62 @@ public class User implements Serializable {
         return "User [token=" + token + ", username=" + username + "]";
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+
     public String getToken() {
         return token;
     }
@@ -178,12 +290,79 @@ public class User implements Serializable {
         this.token = token;
     }
 
-    public String getUsername() {
-        return username;
+    static public User fromJson(JSONObject json) {
+        try {
+            JSONArray results = json.getJSONArray("results");
+            if (results.length() > 0) {
+                JSONObject jsonUser = results.getJSONObject(0).getJSONObject(
+                        "user");
+
+                User u = new User();
+
+                u.setUsername(jsonUser.getString("username"));
+                u.setEmail(jsonUser.getString("email"));
+                u.setPassword(jsonUser.getString("password"));
+
+                u.setTitle(jsonUser.getJSONObject("name").getString("title"));
+                u.setFirstName(jsonUser.getJSONObject("name")
+                        .getString("first"));
+                u.setLastName(jsonUser.getJSONObject("name").getString("last"));
+                u.setThumbnail(jsonUser.getJSONObject("picture").getString(
+                        "thumbnail"));
+
+                u.setToken(jsonUser.getString("sha256"));
+
+                return u;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    static public User fromAccount(Account account, Context context) {
+        User u = new User();
+
+        AccountManager am = AccountManager.get(context);
+
+        u.setUsername(am.getUserData(account, "username"));
+        u.setEmail(am.getUserData(account, "email"));
+        u.setPassword(am.getUserData(account, "password"));
+
+        u.setTitle(am.getUserData(account, "title"));
+        u.setFirstName(am.getUserData(account, "firstName"));
+        u.setLastName(am.getUserData(account, "lastName"));
+        u.setThumbnail(am.getUserData(account, "thumbnail"));
+
+        u.setToken(am.getUserData(account, "token"));
+
+        return u;
+    }
+
+    static public User saveAccount(JSONObject result, Account account, Context context) {
+        User u = User.fromJson(result);
+
+        if (u != null) {
+            saveToAccount(u, account, context);
+        }
+
+        return u;
+    }
+
+    static public void saveToAccount(User user, Account account, Context context) {
+        AccountManager am = AccountManager.get(context);
+
+        am.setUserData(account, "username", user.getUsername());
+        am.setUserData(account, "email", user.getEmail());
+        am.setUserData(account, "password", user.getPassword());
+
+        am.setUserData(account, "title", user.getTitle());
+        am.setUserData(account, "firstName", user.getFirstName());
+        am.setUserData(account, "lastName", user.getLastName());
+        am.setUserData(account, "thumbnail", user.getThumbnail());
+
+        am.setUserData(account, "token", user.getToken());
     }
 }
 ```
@@ -191,9 +370,7 @@ public class User implements Serializable {
 - [Authenticator](./src/me/hoen/android_auth_sync/auth/Authenticator.java)
 ```java
 public class Authenticator extends AbstractAccountAuthenticator {
-    public static final String ACCOUNT_TYPE = "me.hoen.android_auth_sync.auth";
-    public static final String AUTHTOKEN_TYPE = "me.hoen.android_auth_sync.auth";
-    
+
     private Context mContext;
 
     public Authenticator(Context context) {
@@ -250,11 +427,12 @@ public class Authenticator extends AbstractAccountAuthenticator {
             final String password = am.getPassword(account);
             if (password != null) {
                 try {
-                    authToken = new ServerAuthenticate(mContext)
-                            .userSignIn(account.name, password);
-                    User user = new User(account.name, authToken);
-                    if (user != null) {
-                        authToken = user.getToken();
+                    User u = new ServerAuthenticate(mContext).userSignIn(
+                            account.name, password);
+
+                    if (u != null) {
+                        User.saveToAccount(u, account, this.mContext);
+                        authToken = u.getToken();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -333,11 +511,12 @@ public class AuthenticatorService extends Service {
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accountType="lstech.aos.auth.authentication"
+    android:accountType="@string/account_type"
     android:icon="@drawable/ic_launcher"
     android:label="@string/app_name"
     android:smallIcon="@drawable/ic_launcher" />
 ```
+
 - [Android Manifest](./AndroidManifest.xml)
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -379,23 +558,6 @@ public class AuthenticatorService extends Service {
                 android:resource="@xml/authenticator" />
         </service>
 
-        <provider
-            android:name="me.hoen.android_auth_sync.sync.SyncContentProvider"
-            android:authorities="me.hoen.android_auth_sync.provider"
-            android:exported="false"
-            android:syncable="true" />
-
-        <service
-            android:name="me.hoen.android_auth_sync.sync.SyncService"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/syncadapter" />
-        </service>
     </application>
 
 </manifest>
@@ -425,8 +587,8 @@ public class MainActivity extends ActionBarActivity {
 
         AccountManager am = AccountManager.get(this);
 
-        String accountType = Authenticator.ACCOUNT_TYPE;
-        String authTokenType = Authenticator.AUTHTOKEN_TYPE;
+        String accountType = getString(R.string.account_type);
+        String authTokenType = getString(R.string.auth_token_type);
 
         am.getAuthTokenByFeatures(accountType, authTokenType, null, this, null,
                 null, new AccountManagerCallback<Bundle>() {

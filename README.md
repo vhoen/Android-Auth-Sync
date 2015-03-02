@@ -11,6 +11,11 @@ For an ease of use, there is not authentication check of any kind, you can basic
 
 The Sync Adapter fetches 3 new [random users](https://randomuser.me) every time. The more you let the app run, the more users there will be.
 
+![](./res/drawable/login.png "")
+![](./res/drawable/add_account.png "")
+![](./res/drawable/sync.png "")
+![](./res/drawable/contacts.png "")
+
 #### Sources
 - [Write your own Android Authenticator](https://udinic.wordpress.com/2013/04/24/write-your-own-android-authenticator/)
 - [Write your own Android Sync Adapter](https://udinic.wordpress.com/2013/07/24/write-your-own-android-sync-adapter/)

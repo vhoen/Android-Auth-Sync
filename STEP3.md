@@ -67,7 +67,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
-        
+
         this.am = AccountManager.get(context);
         this.context = context;
     }
@@ -77,13 +77,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             ContentProviderClient provider, SyncResult syncResult) {
         try {
             String authToken = am.blockingGetAuthToken(account,
-                    Authenticator.AUTHTOKEN_TYPE, true);
-            
+                    context.getString(R.string.auth_token_type), true);
+
             Log.d(MainActivity.TAG, "Sync auth token : " + authToken);
-            
+
             new LoadContactsTask(getContext()).execute(authToken);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -160,7 +159,7 @@ public class SyncContentProvider extends ContentProvider {
 <?xml version="1.0" encoding="utf-8"?>
 <sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
     android:accountType="@string/account_type"
-    android:contentAuthority="me.hoen.android_auth_sync.provider"
+    android:contentAuthority="@string/sync_provider"
     android:supportsUploading="true"
     android:userVisible="true" />
 ```
